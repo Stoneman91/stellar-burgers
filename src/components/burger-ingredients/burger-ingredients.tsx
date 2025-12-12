@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect, FC } from 'react';
 import { useInView } from 'react-intersection-observer';
-import { useDispatch } from 'react-redux';
 
 import { TTabMode } from '@utils-types';
 import { BurgerIngredientsUI } from '../ui/burger-ingredients';
@@ -8,15 +7,10 @@ import { useSelector } from 'react-redux';
 import {
   selectBuns,
   selectMains,
-  selectSauces,
-  selectIngredientsLoading,
-  selectIngredients,
-  getIngredients
+  selectSauces
 } from '../../slices/ingredientsSlice';
 
 export const BurgerIngredients: FC = () => {
-  const dispatch = useDispatch();
-
   const buns = useSelector(selectBuns);
   const mains = useSelector(selectMains);
   const sauces = useSelector(selectSauces);

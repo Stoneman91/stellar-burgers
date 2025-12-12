@@ -18,6 +18,7 @@ import { Modal } from '../modal';
 import { useDispatch } from '../../services/store';
 import { useEffect } from 'react';
 import { getIngredients } from '../../slices/ingredientsSlice';
+import { AppHeader } from '../app-header';
 
 const App = () => {
   const location = useLocation();
@@ -35,6 +36,7 @@ const App = () => {
 
   return (
     <div className={styles.app}>
+      <AppHeader />
       <Routes location={background || location}>
         <Route path='/' element={<ConstructorPage />} />
         <Route path='/feed' element={<Feed />} />

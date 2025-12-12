@@ -1,4 +1,3 @@
-// src/slices/burgerConstructorSlice.ts
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { TIngredient } from '@utils-types';
 import { RootState } from '../services/store';
@@ -49,11 +48,11 @@ export const burgerConstructorSlice = createSlice({
     ) => {
       const { dragIndex, hoverIndex } = action.payload;
       const draggedItem = state.ingredients[dragIndex];
-      
+
       const newIngredients = [...state.ingredients];
       newIngredients.splice(dragIndex, 1);
       newIngredients.splice(hoverIndex, 0, draggedItem);
-      
+
       state.ingredients = newIngredients;
     },
     clearConstructor: (state) => {
@@ -66,7 +65,6 @@ export const burgerConstructorSlice = createSlice({
     }
   }
 });
-
 
 const calculateTotalPrice = (
   bun: TIngredient | null,
@@ -99,6 +97,6 @@ export const selectTotalPrice = (state: RootState) =>
 export const selectConstructorIngredientsIds = (state: RootState) => {
   const { bun, ingredients } = state.burgerConstructor;
   const bunIds = bun ? [bun._id] : [];
-  const ingredientIds = ingredients.map((item) => item._id);
+  const ingredientIds = ingredients.map((item: { _id: any }) => item._id);
   return [...bunIds, ...ingredientIds, ...bunIds];
 };

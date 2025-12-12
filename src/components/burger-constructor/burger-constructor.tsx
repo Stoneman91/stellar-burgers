@@ -1,23 +1,25 @@
 import { FC, useMemo } from 'react';
 import { useSelector, useDispatch } from '../../services/store';
-import { 
+import {
   selectConstructor,
   selectBun,
   selectIngredients,
-  selectTotalPrice,
-} from '../../slices/burgerConstructorSlice';
-import { createOrder, selectOrderRequest, selectOrderModalData } from '../../slices/ordersSlice';
+  selectTotalPrice
+} from '../../slices/burgerConstructor';
+import {
+  createOrder,
+  selectOrderRequest,
+  selectOrderModalData
+} from '../../slices/ordersSlice';
 import { BurgerConstructorUI } from '@ui';
 
 export const BurgerConstructor: FC = () => {
   const dispatch = useDispatch();
-  
 
   const constructorItems = useSelector(selectConstructor);
   const bun = useSelector(selectBun);
   const ingredients = useSelector(selectIngredients);
   const totalPrice = useSelector(selectTotalPrice);
-  
 
   const orderRequest = useSelector(selectOrderRequest);
   const orderModalData = useSelector(selectOrderModalData);
@@ -25,15 +27,13 @@ export const BurgerConstructor: FC = () => {
   const onOrderClick = () => {
     if (!bun || orderRequest) return;
 
-    const ingredientIds = [bun._id, ...ingredients.map(i => i._id), bun._id];
+    const ingredientIds = [bun._id, ...ingredients.map((i) => i._id), bun._id];
     dispatch(createOrder(ingredientIds));
   };
 
-  const closeOrderModal = () => {
+  const closeOrderModal = () => {};
 
-  };
-
-  const price = totalPrice; 
+  const price = totalPrice;
   return (
     <BurgerConstructorUI
       price={price}
