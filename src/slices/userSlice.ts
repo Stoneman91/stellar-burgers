@@ -12,7 +12,7 @@ import {
   TLoginData
 } from '@api';
 import { setCookie, getCookie, deleteCookie } from '../utils/cookie';
-import { RootState } from '../services/store';
+import { AppDispatch, RootState } from '../services/store';
 
 export const registerUser = createAsyncThunk(
   'user/register',
@@ -142,6 +142,16 @@ export const userSlice = createSlice({
   name: 'user',
   initialState,
   reducers: {
+    setUserData: (state, action: PayloadAction<{ user: TUser | null }>) => {
+      state.user = action.payload.user;
+      state.isAuth = !!action.payload.user;
+    },
+
+    setUser: (state, action: PayloadAction<TUser | null>) => {
+      state.user = action.payload;
+      state.isAuth = !!action.payload;
+    },
+
     setAuth: (state, action: PayloadAction<boolean>) => {
       state.isAuth = action.payload;
     },
