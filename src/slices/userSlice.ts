@@ -1,4 +1,3 @@
-// src/slices/userSlice.ts
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { TUser } from '@utils-types';
 import {
@@ -15,7 +14,6 @@ import {
 import { setCookie, getCookie, deleteCookie } from '../utils/cookie';
 import { RootState } from '../services/store';
 
-// Асинхронные операции
 export const registerUser = createAsyncThunk(
   'user/register',
   async (data: TRegisterData, { rejectWithValue }) => {
@@ -122,7 +120,6 @@ export const resetPassword = createAsyncThunk(
   }
 );
 
-// Состояние
 interface UserState {
   user: TUser | null;
   isLoading: boolean;
@@ -160,7 +157,7 @@ export const userSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // registerUser
+
       .addCase(registerUser.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -174,7 +171,7 @@ export const userSlice = createSlice({
         state.isLoading = false;
         state.error = action.payload as string;
       })
-      // loginUser
+
       .addCase(loginUser.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -188,7 +185,7 @@ export const userSlice = createSlice({
         state.isLoading = false;
         state.error = action.payload as string;
       })
-      // getUser
+
       .addCase(getUser.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -204,7 +201,7 @@ export const userSlice = createSlice({
         state.isAuth = false;
         state.error = action.payload as string;
       })
-      // updateUser
+
       .addCase(updateUser.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -217,7 +214,7 @@ export const userSlice = createSlice({
         state.isLoading = false;
         state.error = action.payload as string;
       })
-      // logoutUser
+
       .addCase(logoutUser.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -231,7 +228,7 @@ export const userSlice = createSlice({
         state.isLoading = false;
         state.error = action.payload as string;
       })
-      // forgotPassword
+
       .addCase(forgotPassword.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -244,7 +241,7 @@ export const userSlice = createSlice({
         state.isLoading = false;
         state.error = action.payload as string;
       })
-      // resetPassword
+
       .addCase(resetPassword.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -263,12 +260,15 @@ export const userSlice = createSlice({
 export const { setAuth, clearUser, clearForgotPassword } = userSlice.actions;
 export default userSlice.reducer;
 
-// Селекторы
-export const selectUser = (state: RootState) => state.user.user;
-export const selectIsAuth = (state: RootState) => state.user.isAuth;
-export const selectUserLoading = (state: RootState) => state.user.isLoading;
-export const selectUserError = (state: RootState) => state.user.error;
+export const selectUser = (state: RootState) =>
+  (state as any).user?.user || null;
+export const selectIsAuth = (state: RootState) =>
+  (state as any).user?.isAuth || false;
+export const selectUserLoading = (state: RootState) =>
+  (state as any).user?.isLoading || false;
+export const selectUserError = (state: RootState) =>
+  (state as any).user?.error || null;
 export const selectForgotPasswordEmail = (state: RootState) =>
-  state.user.forgotPasswordEmail;
+  (state as any).user?.forgotPasswordEmail || null;
 export const selectResetPasswordSuccess = (state: RootState) =>
-  state.user.resetPasswordSuccess;
+  (state as any).user?.resetPasswordSuccess || false;

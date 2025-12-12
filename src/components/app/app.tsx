@@ -17,56 +17,68 @@ import { IngredientDetails } from '../ingredient-details';
 import { Modal } from '../modal';
 import { useDispatch } from '../../services/store';
 import { useEffect } from 'react';
-import { getIngredients } from 'src/slices/ingredientsSlice';
-const location = useLocation();
-const background = location.state?.background;
-const navigate = useNavigate();
+import { getIngredients } from '../../slices/ingredientsSlice';
 
-useEffect(() => {
-  useDispatch(getIngredients());
-}, []);
+const App = () => {
+  const location = useLocation();
+  const background = location.state?.background;
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-const handleCloseModal = () => {
-  navigate(-1);
+  useEffect(() => {
+    dispatch(getIngredients());
+  }, [dispatch]);
+
+  const handleCloseModal = () => {
+    navigate(-1);
+  };
+
+  return (
+    <div className={styles.app}>
+      <Routes location={background || location}>
+        <Route path='/' element={<ConstructorPage />} />
+        <Route path='/feed' element={<Feed />} />
+        <Route path='/feed/:number' element={<Feed />} />
+        <Route path='/login' element={<Login />} />
+        <Route path='/register' element={<Register />} />
+        <Route path='/forgot-password' element={<ForgotPassword />} />
+        <Route path='/reset-password' element={<ResetPassword />} />
+        <Route path='/profile' element={<Profile />} />
+        <Route path='/profile/orders' element={<ProfileOrders />} />
+        <Route path='/ingredients/:id' element={<IngredientDetails />} />
+        <Route path='*' element={<NotFound404 />} />
+      </Routes>
+
+      {background && (
+        <Routes>
+          <Route
+            path='/feed/:number'
+            element={
+              <Modal title='' onClose={handleCloseModal}>
+                <OrderInfo />
+              </Modal>
+            }
+          />
+          <Route
+            path='/ingredients/:id'
+            element={
+              <Modal title='Детали ингредиента' onClose={handleCloseModal}>
+                <IngredientDetails />
+              </Modal>
+            }
+          />
+          <Route
+            path='/profile/orders/:number'
+            element={
+              <Modal title='' onClose={handleCloseModal}>
+                <OrderInfo />
+              </Modal>
+            }
+          />
+        </Routes>
+      )}
+    </div>
+  );
 };
 
-const App = () => (
-  <div className={styles.app}>
-    <Routes>
-      <Route path='/' element={<ConstructorPage />} />
-      <Route path='/feed' element={<Feed />} />
-      <Route
-        path='/feed/:numder'
-        element={
-          <Modal title='' onClose={handleCloseModal}>
-            <OrderInfo />{' '}
-          </Modal>
-        }
-      />
-      <Route path='/login' element={<Login />} />
-      <Route path='/register' element={<Register />} />
-      <Route path='/forgot-profile' element={<ForgotPassword />} />
-      <Route path='/reset-password' element={<ResetPassword />} />
-      <Route path='/profile' element={<Profile />} />
-      <Route path='/profile/orders' element={<ProfileOrders />} />
-      <Route
-        path='/ingredients/:id'
-        element={
-          <Modal title='' onClose={handleCloseModal}>
-            <IngredientDetails />{' '}
-          </Modal>
-        }
-      />
-      <Route
-        path='/profile/orders/:number'
-        element={
-          <Modal title='' onClose={handleCloseModal}>
-            <OrderInfo />{' '}
-          </Modal>
-        }
-      />
-      <Route path='*' element={<NotFound404 />} />
-    </Routes>
-  </div>
-);
 export default App;
