@@ -13,9 +13,12 @@ import {
   clearOrder
 } from '../../slices/ordersSlice';
 import { BurgerConstructorUI } from '@ui';
+import { selectIsAuthenticated } from '../../slices/userSlice';
+import { useNavigate } from 'react-router-dom';
 
 export const BurgerConstructor: FC = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const constructorItems = useSelector(selectConstructor);
   const bun = useSelector(selectBun);
@@ -27,6 +30,13 @@ export const BurgerConstructor: FC = () => {
 
   const onOrderClick = () => {
     if (!bun || orderRequest) return;
+
+    if (!selectIsAuthenticated) {
+      navigate('/login', {
+        state: { from: location.pathname }
+      });
+      return;
+    }
 
     const ingredientIds = [bun._id, ...ingredients.map((i) => i._id), bun._id];
     dispatch(createOrder(ingredientIds));

@@ -3,7 +3,8 @@ import { TIngredient } from '@utils-types';
 import { RootState } from '../services/store';
 
 interface ConstructorIngredient extends TIngredient {
-  uuid: string;
+  uuid?: string;
+  id:string;
 }
 
 interface BurgerConstructorState {
@@ -33,7 +34,7 @@ export const burgerConstructorSlice = createSlice({
       },
       prepare: (ingredient: TIngredient) => {
         const uuid = crypto.randomUUID();
-        return { payload: { ...ingredient, uuid } };
+        return { payload: { ...ingredient, uuid, id: uuid } };
       }
     },
     removeIngredient: (state, action: PayloadAction<string>) => {
