@@ -1,284 +1,159 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { TUser } from '@utils-types';
 import {
-  registerUserApi,
-  loginUserApi,
   getUserApi,
-  updateUserApi,
+  loginUserApi,
   logoutApi,
-  forgotPasswordApi,
-  resetPasswordApi,
-  TRegisterData,
-  TLoginData
+  registerUserApi,
+  updateUserApi,
+  refreshToken
 } from '@api';
-import { setCookie, getCookie, deleteCookie } from '../utils/cookie';
-import { AppDispatch, RootState } from '../services/store';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { TLoginData, TUser } from '@utils-types';
+import { deleteCookie, getCookie, setCookie } from '../../src/utils/cookie';
+import { RootState } from '../services/store';
+
+export type TRegisterData = {
+  email: string;
+  password: string;
+  name: string;
+};
+
+interface UserState {
+  user: TUser | null;
+  isAuthChecked: boolean;
+  error: string | null;
+}
+
+const initialState: UserState = {
+  user: null,
+  isAuthChecked: false,
+  error: null
+};
+
+export const checkUserAuth = createAsyncThunk(
+  'user/checkAuth',
+  async (_, { rejectWithValue }) => {
+    const accessToken = getCookie('accessToken');
+
+    if (!accessToken) {
+      return null;
+    }
+
+    try {
+      const response = await getUserApi();
+      return response.user;
+    } catch (error) {
+      try {
+        const refreshData = await refreshToken();
+        setCookie('accessToken', refreshData.accessToken);
+        localStorage.setItem('refreshToken', refreshData.refreshToken);
+
+        const response = await getUserApi();
+        return response.user;
+      } catch (refreshError) {
+        deleteCookie('accessToken');
+        localStorage.removeItem('refreshToken');
+        return rejectWithValue('Сессия истекла');
+      }
+    }
+  }
+);
 
 export const registerUser = createAsyncThunk(
   'user/register',
-  async (data: TRegisterData, { rejectWithValue }) => {
-    try {
-      const response = await registerUserApi(data);
+  async (data: TRegisterData) => {
+    const response = await registerUserApi(data);
+    if (response.success) {
       setCookie('accessToken', response.accessToken);
       localStorage.setItem('refreshToken', response.refreshToken);
-      return response.user;
-    } catch (error) {
-      return rejectWithValue(
-        error instanceof Error ? error.message : 'Ошибка регистрации'
-      );
     }
+    return response.user;
   }
 );
 
 export const loginUser = createAsyncThunk(
   'user/login',
-  async (data: TLoginData, { rejectWithValue }) => {
-    try {
-      const response = await loginUserApi(data);
-      setCookie('accessToken', response.accessToken);
-      localStorage.setItem('refreshToken', response.refreshToken);
-      return response.user;
-    } catch (error) {
-      return rejectWithValue(
-        error instanceof Error ? error.message : 'Ошибка авторизации'
-      );
-    }
-  }
-);
-
-export const getUser = createAsyncThunk(
-  'user/getUser',
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await getUserApi();
-      return response.user;
-    } catch (error) {
-      return rejectWithValue(
-        error instanceof Error
-          ? error.message
-          : 'Ошибка получения данных пользователя'
-      );
-    }
-  }
-);
-
-export const updateUser = createAsyncThunk(
-  'user/updateUser',
-  async (user: Partial<TRegisterData>, { rejectWithValue }) => {
-    try {
-      const response = await updateUserApi(user);
-      return response.user;
-    } catch (error) {
-      return rejectWithValue(
-        error instanceof Error ? error.message : 'Ошибка обновления данных'
-      );
-    }
-  }
-);
-
-export const logoutUser = createAsyncThunk(
-  'user/logout',
-  async (_, { rejectWithValue }) => {
-    try {
-      await logoutApi();
-      deleteCookie('accessToken');
+  async (data: TLoginData) => {
+    const info = await loginUserApi(data);
+    if (info.success) {
+      setCookie('accessToken', info.accessToken);
       localStorage.removeItem('refreshToken');
-      return null;
-    } catch (error) {
-      return rejectWithValue(
-        error instanceof Error ? error.message : 'Ошибка выхода'
-      );
+      localStorage.setItem('refreshToken', info.refreshToken);
     }
+    return info.user;
   }
 );
 
-export const forgotPassword = createAsyncThunk(
-  'user/forgotPassword',
-  async (email: string, { rejectWithValue }) => {
-    try {
-      await forgotPasswordApi({ email });
-      return email;
-    } catch (error) {
-      return rejectWithValue(
-        error instanceof Error ? error.message : 'Ошибка восстановления пароля'
-      );
-    }
+export const logout = createAsyncThunk('user/logout', async () => {
+  const info = await logoutApi();
+  if (info.success) {
+    deleteCookie('accessToken');
+    localStorage.removeItem('refreshToken');
   }
-);
+  return info;
+});
 
-export const resetPassword = createAsyncThunk(
-  'user/resetPassword',
-  async (data: { password: string; token: string }, { rejectWithValue }) => {
-    try {
-      await resetPasswordApi(data);
-      return true;
-    } catch (error) {
-      return rejectWithValue(
-        error instanceof Error ? error.message : 'Ошибка сброса пароля'
-      );
-    }
-  }
-);
-
-interface UserState {
-  user: TUser | null;
-  isLoading: boolean;
-  error: string | null;
-  isAuth: boolean;
-  forgotPasswordEmail: string | null;
-  resetPasswordSuccess: boolean;
-}
-
-export const initialState: UserState = {
-  user: null,
-  isLoading: false,
-  error: null,
-  isAuth: false,
-  forgotPasswordEmail: null,
-  resetPasswordSuccess: false
-};
+export const updateUser = createAsyncThunk('user/updateUser', updateUserApi);
 
 export const userSlice = createSlice({
   name: 'user',
   initialState,
   reducers: {
-    setUserData: (state, action: PayloadAction<{ user: TUser | null }>) => {
-      state.user = action.payload.user;
-      state.isAuth = !!action.payload.user;
-    },
-
-    setUser: (state, action: PayloadAction<TUser | null>) => {
-      state.user = action.payload;
-      state.isAuth = !!action.payload;
-    },
-
-    setAuth: (state, action: PayloadAction<boolean>) => {
-      state.isAuth = action.payload;
-    },
-    clearUser: (state) => {
-      state.user = null;
-      state.isAuth = false;
+    clearError: (state) => {
       state.error = null;
-    },
-    clearForgotPassword: (state) => {
-      state.forgotPasswordEmail = null;
-      state.resetPasswordSuccess = false;
     }
   },
   extraReducers: (builder) => {
     builder
-
-      .addCase(registerUser.pending, (state) => {
-        state.isLoading = true;
-        state.error = null;
+      .addCase(checkUserAuth.pending, (state) => {
+        state.isAuthChecked = false;
       })
-      .addCase(registerUser.fulfilled, (state, action) => {
-        state.isLoading = false;
+      .addCase(checkUserAuth.fulfilled, (state, action) => {
         state.user = action.payload;
-        state.isAuth = true;
-      })
-      .addCase(registerUser.rejected, (state, action) => {
-        state.isLoading = false;
-        state.error = action.payload as string;
-      })
-
-      .addCase(loginUser.pending, (state) => {
-        state.isLoading = true;
+        state.isAuthChecked = true;
         state.error = null;
       })
+      .addCase(checkUserAuth.rejected, (state, action) => {
+        state.user = null;
+        state.isAuthChecked = true;
+        state.error = (action.payload as string) || 'Ошибка авторизации';
+      })
+
       .addCase(loginUser.fulfilled, (state, action) => {
-        state.isLoading = false;
         state.user = action.payload;
-        state.isAuth = true;
+        state.error = null;
       })
       .addCase(loginUser.rejected, (state, action) => {
-        state.isLoading = false;
-        state.error = action.payload as string;
+        state.error = action.error.message || 'Ошибка входа';
       })
 
-      .addCase(getUser.pending, (state) => {
-        state.isLoading = true;
+      .addCase(registerUser.fulfilled, (state, action) => {
+        state.user = action.payload;
         state.error = null;
       })
-      .addCase(getUser.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.user = action.payload;
-        state.isAuth = true;
+      .addCase(registerUser.rejected, (state, action) => {
+        state.error = action.error.message || 'Ошибка регистрации';
       })
-      .addCase(getUser.rejected, (state, action) => {
-        state.isLoading = false;
+
+      .addCase(logout.fulfilled, (state) => {
         state.user = null;
-        state.isAuth = false;
-        state.error = action.payload as string;
-      })
-
-      .addCase(updateUser.pending, (state) => {
-        state.isLoading = true;
         state.error = null;
       })
+
       .addCase(updateUser.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.user = action.payload;
+        state.user = action.payload.user;
       })
       .addCase(updateUser.rejected, (state, action) => {
-        state.isLoading = false;
-        state.error = action.payload as string;
-      })
-
-      .addCase(logoutUser.pending, (state) => {
-        state.isLoading = true;
-        state.error = null;
-      })
-      .addCase(logoutUser.fulfilled, (state) => {
-        state.isLoading = false;
-        state.user = null;
-        state.isAuth = false;
-      })
-      .addCase(logoutUser.rejected, (state, action) => {
-        state.isLoading = false;
-        state.error = action.payload as string;
-      })
-
-      .addCase(forgotPassword.pending, (state) => {
-        state.isLoading = true;
-        state.error = null;
-      })
-      .addCase(forgotPassword.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.forgotPasswordEmail = action.payload;
-      })
-      .addCase(forgotPassword.rejected, (state, action) => {
-        state.isLoading = false;
-        state.error = action.payload as string;
-      })
-
-      .addCase(resetPassword.pending, (state) => {
-        state.isLoading = true;
-        state.error = null;
-      })
-      .addCase(resetPassword.fulfilled, (state) => {
-        state.isLoading = false;
-        state.resetPasswordSuccess = true;
-      })
-      .addCase(resetPassword.rejected, (state, action) => {
-        state.isLoading = false;
-        state.error = action.payload as string;
+        state.error = action.error.message || 'Ошибка обновления данных';
       });
   }
 });
 
-export const { setAuth, clearUser, clearForgotPassword } = userSlice.actions;
-export default userSlice.reducer;
+export const { clearError } = userSlice.actions;
 
-export const selectUser = (state: RootState) =>
-  (state as any).user?.user || null;
-export const selectIsAuth = (state: RootState) =>
-  (state as any).user?.isAuth || false;
-export const selectUserLoading = (state: RootState) =>
-  (state as any).user?.isLoading || false;
-export const selectUserError = (state: RootState) =>
-  (state as any).user?.error || null;
-export const selectForgotPasswordEmail = (state: RootState) =>
-  (state as any).user?.forgotPasswordEmail || null;
-export const selectResetPasswordSuccess = (state: RootState) =>
-  (state as any).user?.resetPasswordSuccess || false;
+export const selectUser = (state: RootState) => state.user.user;
+export const selectIsAuthChecked = (state: RootState) =>
+  state.user.isAuthChecked;
+export const selectIsAuthenticated = (state: RootState) => !!state.user.user;
+export const selectError = (state: RootState) => state.user.error;
+
+export default userSlice.reducer;

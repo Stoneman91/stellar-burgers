@@ -9,7 +9,8 @@ import {
 import {
   createOrder,
   selectOrderRequest,
-  selectOrderModalData
+  selectOrderModalData,
+  clearOrder
 } from '../../slices/ordersSlice';
 import { BurgerConstructorUI } from '@ui';
 
@@ -31,7 +32,9 @@ export const BurgerConstructor: FC = () => {
     dispatch(createOrder(ingredientIds));
   };
 
-  const closeOrderModal = () => {};
+  const closeOrderModal = () => {
+    dispatch(clearOrder());
+  };
 
   const price = totalPrice;
   return (

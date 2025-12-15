@@ -16,6 +16,11 @@ export type TConstructorIngredient = TIngredient & {
   id: string;
 };
 
+export type TLoginData = {
+  email: string;
+  password: string;
+};
+
 export type TOrder = {
   _id: string;
   status: string;
