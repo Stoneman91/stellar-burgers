@@ -4,7 +4,7 @@ import { OrderInfoUI } from '../ui/order-info';
 import { TIngredient, TOrder } from '@utils-types';
 import { useDispatch, useSelector } from '../../services/store';
 import { selectIngredients } from '../../slices/ingredientsSlice';
-import { 
+import {
   getOrderByNumber,
   clearCurrentOrder,
   selectCurrentOrder,
@@ -26,22 +26,21 @@ type TOrderInfo = TOrder & {
 export const OrderInfo: FC = () => {
   const dispatch = useDispatch();
   const { number } = useParams<{ number: string }>();
-  
+
   const orderData = useSelector(selectCurrentOrder);
   const ingredients = useSelector(selectIngredients);
   const isLoading = useSelector(selectFeedLoading);
   const error = useSelector(selectFeedError);
-  
+
   useEffect(() => {
     if (number) {
       dispatch(getOrderByNumber(Number(number)));
     }
-    
+
     return () => {
       dispatch(clearCurrentOrder());
     };
   }, [dispatch, number]);
-
 
   const orderInfo = useMemo<TOrderInfo | null>(() => {
     if (!orderData || !ingredients.length) return null;
@@ -51,7 +50,7 @@ export const OrderInfo: FC = () => {
     const ingredientsInfo = orderData.ingredients.reduce<TIngredientsWithCount>(
       (acc, item) => {
         if (!item) return acc;
-        
+
         const ingredient = ingredients.find((ing) => ing._id === item);
         if (ingredient) {
           if (!acc[item]) {
@@ -87,7 +86,7 @@ export const OrderInfo: FC = () => {
 
   if (error) {
     return (
-      <div className="text text_type_main-medium text_color_inactive p-10 text-center">
+      <div className='text text_type_main-medium text_color_inactive p-10 text-center'>
         Ошибка: {error}
       </div>
     );
@@ -95,7 +94,7 @@ export const OrderInfo: FC = () => {
 
   if (!orderInfo && !isLoading) {
     return (
-      <div className="text text_type_main-medium text_color_inactive p-10 text-center">
+      <div className='text text_type_main-medium text_color_inactive p-10 text-center'>
         Заказ не найден
       </div>
     );
