@@ -17,6 +17,7 @@ import { selectIsAuthenticated } from '../../slices/userSlice';
 import { useNavigate } from 'react-router-dom';
 
 export const BurgerConstructor: FC = () => {
+  const isAuthenticated = useSelector(selectIsAuthenticated);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -31,7 +32,7 @@ export const BurgerConstructor: FC = () => {
   const onOrderClick = () => {
     if (!bun || orderRequest) return;
 
-    if (!selectIsAuthenticated) {
+    if (!isAuthenticated) {
       navigate('/login', {
         state: { from: location.pathname }
       });

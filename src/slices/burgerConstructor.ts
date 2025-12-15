@@ -4,7 +4,7 @@ import { RootState } from '../services/store';
 
 interface ConstructorIngredient extends TIngredient {
   uuid?: string;
-  id:string;
+  id: string;
 }
 
 interface BurgerConstructorState {
