@@ -4,7 +4,8 @@ import {
   selectConstructor,
   selectBun,
   selectIngredients,
-  selectTotalPrice
+  selectTotalPrice,
+  clearConstructor
 } from '../../slices/burgerConstructor';
 import {
   createOrder,
@@ -15,6 +16,7 @@ import {
 import { BurgerConstructorUI } from '@ui';
 import { selectIsAuthenticated } from '../../slices/userSlice';
 import { useNavigate } from 'react-router-dom';
+import { error } from 'console';
 
 export const BurgerConstructor: FC = () => {
   const isAuthenticated = useSelector(selectIsAuthenticated);
@@ -40,9 +42,15 @@ export const BurgerConstructor: FC = () => {
     }
 
     const ingredientIds = [bun._id, ...ingredients.map((i) => i._id), bun._id];
-    dispatch(createOrder(ingredientIds));
+    dispatch(createOrder(ingredientIds))
+      .unwrap()
+      .then(() => {
+        dispatch(clearConstructor());
+      })
+      .catch((error) => {
+        console.error('Ошибка создания заказа:', error);
+      });
   };
-
   const closeOrderModal = () => {
     dispatch(clearOrder());
   };
