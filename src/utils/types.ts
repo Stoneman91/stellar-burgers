@@ -14,6 +14,12 @@ export type TIngredient = {
 
 export type TConstructorIngredient = TIngredient & {
   id: string;
+  uuid?: string;
+};
+
+export type TLoginData = {
+  email: string;
+  password: string;
 };
 
 export type TOrder = {
