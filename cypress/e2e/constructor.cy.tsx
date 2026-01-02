@@ -1,88 +1,73 @@
 /// <reference types="cypress" />
 
-// Селекторы для элементов интерфейса
-const ELEMENT_SELECTORS = {
-  MODAL_WINDOW: '[data-cy="modal"]',
-  MODAL_CLOSE_BUTTON: '[data-cy="modal-close"]',
-  MODAL_OVERLAY_BACKGROUND: '[data-cy="modal-overlay"]',
-  INGREDIENT_INFO: '[data-cy="ingredient-details"]',
-  ORDER_NUMERATION: '[data-cy="order-number"]',
-  CONSTRUCTOR_AREA: '[data-cy="burger-constructor"]',
+// Конфигурация элементов управления
+const CONTROL_ELEMENTS = {
+  DIALOG_WINDOW: '[data-cy="modal"]',
+  DIALOG_CLOSE_BUTTON: '[data-cy="modal-close"]',
+  DIALOG_OVERLAY: '[data-cy="modal-overlay"]',
+
+  INGREDIENT_INFO_PANEL: '[data-cy="ingredient-details"]',
+  ORDER_IDENTIFIER: '[data-cy="order-number"]',
+  
+  BURGER_ASSEMBLER: '[data-cy="burger-constructor"]',
+
+  BUN_SELECTION_MESSAGE: 'Выберите булки',
+  FILLING_SELECTION_MESSAGE: 'Выберите начинку',
+
+  COMPONENTS_API: 'api/ingredients',
+  USER_PROFILE_API: 'api/auth/user',
+  ORDER_PROCESSING_API: 'api/orders',
+
+  COMPONENTS_TEST_DATA: 'ingredients.json',
+  USER_TEST_DATA: 'user.json',
+  ORDER_TEST_DATA: 'order.json',
+
+  AUTHENTICATION_COOKIE: 'accessToken',
+  AUTHENTICATION_TOKEN: 'test-access-token',
+  SESSION_RENEWAL_KEY: 'refreshToken',
+  SESSION_RENEWAL_TOKEN: 'test-refresh-token',
 };
 
-// Текстовые константы
-const TEXT_CONTENT = {
-  BUN_SELECTION_PROMPT: 'Выберите булки',
-  FILLING_SELECTION_PROMPT: 'Выберите начинку',
+// Элементы для сборки бургера
+const ASSEMBLY_COMPONENTS = {
+  FLUORESCENT_BREAD: 'Флюоресцентная булка R2-D3',
+  CRATORIAN_BREAD: 'Краторная булка N-200i',
+  LUMINESCENT_PATTY: 'Филе Люминесцентного тетраодонтимформа',
+  SPICY_CONDIMENT: 'Соус Spicy-X',
 };
 
-// API маршруты
-const API_ENDPOINTS = {
-  INGREDIENTS_DATA: 'api/ingredients',
-  USER_PROFILE_DATA: 'api/auth/user',
-  ORDER_CREATION: 'api/orders',
+// Текстовые метки элементов управления
+const CONTROL_BUTTON_TEXTS = {
+  ADD_COMPONENT: 'Добавить',
+  FINALIZE_PURCHASE: 'Оформить заказ',
 };
 
-// Файлы с тестовыми данными
-const TEST_DATA_FILES = {
-  INGREDIENTS_MOCK: 'ingredients.json',
-  USER_PROFILE_MOCK: 'user.json',
-  ORDER_DETAILS_MOCK: 'order.json',
+// Получение элемента компонента
+const locateComponentItem = (componentName: string) => {
+  return cy.contains(componentName).parents('li');
 };
 
-// Настройки авторизации
-const AUTH_CONFIG = {
-  TOKEN_COOKIE_NAME: 'accessToken',
-  TOKEN_COOKIE_VALUE: 'test-access-token',
-  REFRESH_TOKEN_STORAGE_KEY: 'refreshToken',
-  REFRESH_TOKEN_STORAGE_VALUE: 'test-refresh-token',
-};
-
-// Ингредиенты для тестирования
-const TEST_INGREDIENTS = {
-  FLUORESCENT_ROLL: 'Флюоресцентная булка R2-D3',
-  KRASTOR_ROLL: 'Краторная булка N-200i',
-  LUMINESCENT_MEAT: 'Филе Люминесцентного тетраодонтимформа',
-  SPICY_SAUCE: 'Соус Spicy-X',
-};
-
-// Надписи на кнопках
-const BUTTON_CAPTIONS = {
-  ADD_ITEM: 'Добавить',
-  FINALIZE_ORDER: 'Оформить заказ',
-};
-
-// Данные о заказе
-const ORDER_INFO = {
-  IDENTIFIER: '12345',
-};
-
-// Функция для поиска карточки ингредиента
-const locateIngredientCard = (ingredientName: string) => {
-  return cy.contains(ingredientName).parents('li');
-};
-
-// Функция добавления ингредиента в конструктор
-const insertIngredient = (ingredientName: string) => {
-  locateIngredientCard(ingredientName)
-    .find(`button:contains("${BUTTON_CAPTIONS.ADD_ITEM}")`)
+// Добавление компонента в сборщик
+const insertComponent = (componentName: string) => {
+  locateComponentItem(componentName)
+    .find(`button:contains("${CONTROL_BUTTON_TEXTS.ADD_COMPONENT}")`)
     .click();
 };
 
-// Функция проверки закрытия модального окна
-const verifyModalIsClosed = () => {
-  cy.get(ELEMENT_SELECTORS.MODAL_WINDOW).should('not.exist');
+// Подтверждение закрытия диалогового окна
+const verifyDialogClosed = () => {
+  cy.get(CONTROL_ELEMENTS.DIALOG_WINDOW).should('not.exist');
   cy.url().should('eq', Cypress.config().baseUrl + '/');
 };
 
-describe('Проверка функционала конструктора бургеров', () => {
+describe('Тестирование функционала сборщика бургеров', () => {
   beforeEach(() => {
-    cy.intercept('GET', API_ENDPOINTS.INGREDIENTS_DATA, { 
-      fixture: TEST_DATA_FILES.INGREDIENTS_MOCK 
-    }).as('loadIngredients');
+    cy.intercept('GET', CONTROL_ELEMENTS.COMPONENTS_API, { 
+      fixture: CONTROL_ELEMENTS.COMPONENTS_TEST_DATA 
+    }).as('loadComponents');
 
     cy.visit('/');
-    cy.wait('@loadIngredients');
+    cy.wait('@loadComponents');
     cy.wait(1000);
   });
 
@@ -93,98 +78,98 @@ describe('Проверка функционала конструктора бу�
     });
   });
 
-  describe('Добавление элементов в конструктор', () => {
-    it('Вставляет булку через кнопку добавления', () => {
-      insertIngredient(TEST_INGREDIENTS.FLUORESCENT_ROLL);
-
-      cy.get('body').should('contain', TEST_INGREDIENTS.FLUORESCENT_ROLL);
+  // 1. ТЕСТЫ ДОБАВЛЕНИЯ ИНГРЕДИЕНТОВ
+  describe('Добавление компонентов в конструктор', () => {
+    it('Добавляет один компонент (минимальное требование)', () => {
+      insertComponent(ASSEMBLY_COMPONENTS.FLUORESCENT_BREAD);
+      cy.get('body').should('contain', ASSEMBLY_COMPONENTS.FLUORESCENT_BREAD);
     });
 
-    it('Добавляет начинку через соответствующую кнопку', () => {
-      insertIngredient(TEST_INGREDIENTS.FLUORESCENT_ROLL);
-      insertIngredient(TEST_INGREDIENTS.LUMINESCENT_MEAT);
-
-      cy.get('body').should('contain', TEST_INGREDIENTS.LUMINESCENT_MEAT);
+    it('Добавляет хлебную основу (идеальное требование)', () => {
+      insertComponent(ASSEMBLY_COMPONENTS.CRATORIAN_BREAD);
+      cy.get('body').should('contain', ASSEMBLY_COMPONENTS.CRATORIAN_BREAD);
     });
 
-    it('Включает соус через интерфейс добавления', () => {
-      insertIngredient(TEST_INGREDIENTS.FLUORESCENT_ROLL);
-      insertIngredient(TEST_INGREDIENTS.SPICY_SAUCE);
-
-      cy.get('body').should('contain', TEST_INGREDIENTS.SPICY_SAUCE);
+    it('Добавляет мясную составляющую (идеальное требование)', () => {
+      insertComponent(ASSEMBLY_COMPONENTS.LUMINESCENT_PATTY);
+      cy.get('body').should('contain', ASSEMBLY_COMPONENTS.LUMINESCENT_PATTY);
     });
   });
 
-  describe('Функционирование всплывающих окон', () => {
-    it('Активирует окно с информацией об ингредиенте по клику', () => {
-      cy.contains(TEST_INGREDIENTS.KRASTOR_ROLL).click();
-
-      cy.get(ELEMENT_SELECTORS.MODAL_WINDOW).should('be.visible');
-      cy.get(ELEMENT_SELECTORS.INGREDIENT_INFO).should('be.visible');
-
-      cy.get(ELEMENT_SELECTORS.MODAL_CLOSE_BUTTON).click();
-      verifyModalIsClosed();
+  // 2. ТЕСТЫ МОДАЛЬНЫХ ОКОН ИНГРЕДИЕНТОВ
+  describe('Функционирование информационных окон компонентов', () => {
+    it('Открывает диалоговое окно с деталями компонента при активации', () => {
+      cy.contains(ASSEMBLY_COMPONENTS.CRATORIAN_BREAD).click();
+      cy.get(CONTROL_ELEMENTS.DIALOG_WINDOW).should('be.visible');
+      cy.get(CONTROL_ELEMENTS.INGREDIENT_INFO_PANEL).should('be.visible');
+      cy.get(CONTROL_ELEMENTS.DIALOG_CLOSE_BUTTON).click();
+      verifyDialogClosed();
     });
 
-    it('Завершает работу окна по нажатию на крестик', () => {
-      cy.contains(TEST_INGREDIENTS.KRASTOR_ROLL).click();
+    it('Завершает работу диалога нажатием на элемент закрытия', () => {
+      cy.contains(ASSEMBLY_COMPONENTS.CRATORIAN_BREAD).click();
       cy.wait(1000);
-
-      cy.get(ELEMENT_SELECTORS.MODAL_CLOSE_BUTTON).click();
-      verifyModalIsClosed();
+      cy.get(CONTROL_ELEMENTS.DIALOG_CLOSE_BUTTON).click();
+      verifyDialogClosed();
     });
 
-    it('Закрывает диалоговое окно кликом по фону', () => {
-      cy.contains(TEST_INGREDIENTS.KRASTOR_ROLL).click();
+    it('Деактивирует диалоговое окно кликом по фоновому слою', () => {
+      cy.contains(ASSEMBLY_COMPONENTS.CRATORIAN_BREAD).click();
       cy.wait(1000);
-
-      cy.get(ELEMENT_SELECTORS.MODAL_OVERLAY_BACKGROUND).click({ force: true });
-      verifyModalIsClosed();
+      cy.get(CONTROL_ELEMENTS.DIALOG_OVERLAY).click({ force: true });
+      verifyDialogClosed();
     });
   });
 
-  describe('Процедура формирования заказа', () => {
+  // 3. ТЕСТЫ СОЗДАНИЯ ЗАКАЗА
+  describe('Процедура оформления покупки', () => {
     beforeEach(() => {
-      cy.intercept('GET', API_ENDPOINTS.USER_PROFILE_DATA, { 
-        fixture: TEST_DATA_FILES.USER_PROFILE_MOCK 
-      }).as('fetchUserProfile');
+      cy.intercept('GET', CONTROL_ELEMENTS.USER_PROFILE_API, { 
+        fixture: CONTROL_ELEMENTS.USER_TEST_DATA 
+      }).as('retrieveUserProfile');
 
-      cy.intercept('POST', API_ENDPOINTS.ORDER_CREATION, { 
-        fixture: TEST_DATA_FILES.ORDER_DETAILS_MOCK 
-      }).as('processOrder');
+      cy.intercept('POST', CONTROL_ELEMENTS.ORDER_PROCESSING_API, { 
+        fixture: CONTROL_ELEMENTS.ORDER_TEST_DATA 
+      }).as('processPurchase');
 
-      cy.setCookie(AUTH_CONFIG.TOKEN_COOKIE_NAME, AUTH_CONFIG.TOKEN_COOKIE_VALUE);
+      cy.setCookie(CONTROL_ELEMENTS.AUTHENTICATION_COOKIE, CONTROL_ELEMENTS.AUTHENTICATION_TOKEN);
       cy.window().then((win) => {
-        win.localStorage.setItem(AUTH_CONFIG.REFRESH_TOKEN_STORAGE_KEY, AUTH_CONFIG.REFRESH_TOKEN_STORAGE_VALUE);
+        win.localStorage.setItem(CONTROL_ELEMENTS.SESSION_RENEWAL_KEY, CONTROL_ELEMENTS.SESSION_RENEWAL_TOKEN);
       });
 
       cy.reload();
-      cy.wait('@loadIngredients');
-      cy.wait('@fetchUserProfile');
+      cy.wait('@loadComponents');
+      cy.wait('@retrieveUserProfile');
       cy.wait(1000);
     });
 
-    it('Формирует заказ с корректным идентификатором', () => {
-      insertIngredient(TEST_INGREDIENTS.FLUORESCENT_ROLL);
-      insertIngredient(TEST_INGREDIENTS.SPICY_SAUCE);
+    it('Создает заказ с проверкой всех этапов', () => {
+      // Сборка бургера
+      insertComponent(ASSEMBLY_COMPONENTS.FLUORESCENT_BREAD);
+      insertComponent(ASSEMBLY_COMPONENTS.SPICY_CONDIMENT);
 
-      cy.get('body').should('contain', TEST_INGREDIENTS.FLUORESCENT_ROLL);
-      cy.get('body').should('contain', TEST_INGREDIENTS.SPICY_SAUCE);
+      // Клик по кнопке оформления
+      cy.contains(CONTROL_BUTTON_TEXTS.FINALIZE_PURCHASE).click();
 
-      cy.contains(BUTTON_CAPTIONS.FINALIZE_ORDER).click();
+      // Ожидание обработки заказа
+      cy.wait('@processPurchase');
 
-      cy.wait('@processOrder');
+      // Проверка модального окна
+      cy.get(CONTROL_ELEMENTS.DIALOG_WINDOW).should('be.visible');
+      
+      // Проверка номера заказа
+      cy.fixture(CONTROL_ELEMENTS.ORDER_TEST_DATA).then((orderData) => {
+        cy.get(CONTROL_ELEMENTS.ORDER_IDENTIFIER).should('contain', orderData.order.number);
+      });
 
-      cy.get(ELEMENT_SELECTORS.MODAL_WINDOW).should('be.visible');
-      cy.get(ELEMENT_SELECTORS.ORDER_NUMERATION).should('contain', ORDER_INFO.IDENTIFIER);
+      // Закрытие модального окна
+      cy.get(CONTROL_ELEMENTS.DIALOG_CLOSE_BUTTON).click();
+      cy.get(CONTROL_ELEMENTS.DIALOG_WINDOW).should('not.exist');
 
-      cy.get(ELEMENT_SELECTORS.MODAL_CLOSE_BUTTON).click();
-
-      cy.get(ELEMENT_SELECTORS.MODAL_WINDOW).should('not.exist');
-
-      cy.get(ELEMENT_SELECTORS.CONSTRUCTOR_AREA).within(() => {
-        cy.contains(TEXT_CONTENT.BUN_SELECTION_PROMPT).should('be.visible');
-        cy.contains(TEXT_CONTENT.FILLING_SELECTION_PROMPT).should('be.visible');
+      // Проверка что конструктор пуст
+      cy.get(CONTROL_ELEMENTS.BURGER_ASSEMBLER).within(() => {
+        cy.contains(CONTROL_ELEMENTS.BUN_SELECTION_MESSAGE).should('be.visible');
+        cy.contains(CONTROL_ELEMENTS.FILLING_SELECTION_MESSAGE).should('be.visible');
       });
     });
   });
