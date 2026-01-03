@@ -1,4 +1,3 @@
-// tests/feedSlice.test.ts
 import reducer, {
   initialState,
   getFeeds,
@@ -18,7 +17,7 @@ describe('Feed Slice', () => {
       test('isLoading меняется на true', () => {
         const action = { type: getFeeds.pending.type };
         const state = reducer(initialState, action);
-        
+
         expect(state.isLoading).toBe(true);
       });
 
@@ -26,7 +25,7 @@ describe('Feed Slice', () => {
         const stateWithError = { ...initialState, error: 'Предыдущая ошибка' };
         const action = { type: getFeeds.pending.type };
         const state = reducer(stateWithError, action);
-        
+
         expect(state.isLoading).toBe(true);
         expect(state.error).toBe(null);
       });
@@ -39,7 +38,7 @@ describe('Feed Slice', () => {
           payload: mockFeedResponse
         };
         const state = reducer(initialState, action);
-        
+
         expect(state.orders).toEqual(mockFeedResponse.orders);
         expect(state.total).toBe(mockFeedResponse.total);
         expect(state.totalToday).toBe(mockFeedResponse.totalToday);
@@ -52,7 +51,7 @@ describe('Feed Slice', () => {
           payload: mockFeedResponse
         };
         const state = reducer(loadingState, action);
-        
+
         expect(state.isLoading).toBe(false);
       });
     });
@@ -65,7 +64,7 @@ describe('Feed Slice', () => {
           payload: errorMessage
         };
         const state = reducer(initialState, action);
-        
+
         expect(state.error).toBe(errorMessage);
       });
 
@@ -76,7 +75,7 @@ describe('Feed Slice', () => {
           payload: 'Ошибка'
         };
         const state = reducer(loadingState, action);
-        
+
         expect(state.isLoading).toBe(false);
       });
     });
@@ -85,12 +84,12 @@ describe('Feed Slice', () => {
       test('Request -> Success цикл', () => {
         let state = reducer(initialState, { type: getFeeds.pending.type });
         expect(state.isLoading).toBe(true);
-        
+
         state = reducer(state, {
           type: getFeeds.fulfilled.type,
           payload: mockFeedResponse
         });
-        
+
         expect(state.isLoading).toBe(false);
         expect(state.orders).toHaveLength(1);
         expect(state.total).toBe(100);
@@ -100,12 +99,12 @@ describe('Feed Slice', () => {
       test('Request -> Failed цикл', () => {
         let state = reducer(initialState, { type: getFeeds.pending.type });
         expect(state.isLoading).toBe(true);
-        
+
         state = reducer(state, {
           type: getFeeds.rejected.type,
           payload: 'Таймаут'
         });
-        
+
         expect(state.isLoading).toBe(false);
         expect(state.error).toBe('Таймаут');
         expect(state.orders).toHaveLength(0);
@@ -118,7 +117,7 @@ describe('Feed Slice', () => {
       test('isLoading меняется на true', () => {
         const action = { type: getOrderByNumber.pending.type };
         const state = reducer(initialState, action);
-        
+
         expect(state.isLoading).toBe(true);
         expect(state.error).toBe(null);
       });
@@ -131,7 +130,7 @@ describe('Feed Slice', () => {
           payload: mockOrder
         };
         const state = reducer(initialState, action);
-        
+
         expect(state.isLoading).toBe(false);
         expect(state.currentOrder).toEqual(mockOrder);
         expect(state.currentOrder?.number).toBe(34567);
@@ -144,7 +143,7 @@ describe('Feed Slice', () => {
           payload: mockOrder
         };
         const state = reducer(loadingState, action);
-        
+
         expect(state.isLoading).toBe(false);
       });
     });
@@ -157,7 +156,7 @@ describe('Feed Slice', () => {
           payload: errorMessage
         };
         const state = reducer(initialState, action);
-        
+
         expect(state.isLoading).toBe(false);
         expect(state.error).toBe(errorMessage);
         expect(state.currentOrder).toBe(null);
@@ -166,27 +165,31 @@ describe('Feed Slice', () => {
 
     describe('Полные циклы', () => {
       test('Request -> Success цикл', () => {
-        let state = reducer(initialState, { type: getOrderByNumber.pending.type });
+        let state = reducer(initialState, {
+          type: getOrderByNumber.pending.type
+        });
         expect(state.isLoading).toBe(true);
-        
+
         state = reducer(state, {
           type: getOrderByNumber.fulfilled.type,
           payload: mockOrder
         });
-        
+
         expect(state.isLoading).toBe(false);
         expect(state.currentOrder?.number).toBe(34567);
       });
 
       test('Request -> Failed цикл', () => {
-        let state = reducer(initialState, { type: getOrderByNumber.pending.type });
+        let state = reducer(initialState, {
+          type: getOrderByNumber.pending.type
+        });
         expect(state.isLoading).toBe(true);
-        
+
         state = reducer(state, {
           type: getOrderByNumber.rejected.type,
           payload: 'Заказ не найден'
         });
-        
+
         expect(state.isLoading).toBe(false);
         expect(state.error).toBe('Заказ не найден');
       });
@@ -199,9 +202,9 @@ describe('Feed Slice', () => {
         ...initialState,
         currentOrder: mockOrder
       };
-      
+
       const state = reducer(stateWithOrder, clearCurrentOrder());
-      
+
       expect(state.currentOrder).toBe(null);
       expect(state.orders).toHaveLength(0);
       expect(state.isLoading).toBe(false);
@@ -212,10 +215,10 @@ describe('Feed Slice', () => {
         mockOrder,
         { ...mockOrder, _id: 'order-2', number: 54321, name: 'Другой бургер' }
       ];
-      
+
       const action = setOrders(orders);
       const state = reducer(initialState, action);
-      
+
       expect(state.orders).toEqual(orders);
       expect(state.orders).toHaveLength(2);
     });
@@ -223,7 +226,7 @@ describe('Feed Slice', () => {
     test('setOrders с пустым массивом', () => {
       const action = setOrders([]);
       const state = reducer(initialState, action);
-      
+
       expect(state.orders).toHaveLength(0);
     });
   });
@@ -234,49 +237,49 @@ describe('Feed Slice', () => {
         type: getFeeds.fulfilled.type,
         payload: mockFeedResponse
       });
-      
+
       state = reducer(state, {
         type: getOrderByNumber.fulfilled.type,
         payload: mockOrder
       });
-      
+
       expect(state.orders).toHaveLength(1);
       expect(state.orders[0].number).toBe(12345);
       expect(state.currentOrder?.number).toBe(34567);
     });
 
-      test('Изолированность состояний isLoading для разных экшенов', () => {
-    let state = reducer(initialState, { type: getFeeds.pending.type });
-    expect(state.isLoading).toBe(true);
-    
-    state = reducer(state, { type: getOrderByNumber.pending.type });
-    expect(state.isLoading).toBe(true);
-    
-    state = reducer(state, {
-      type: getOrderByNumber.fulfilled.type,
-      payload: mockOrder
+    test('Изолированность состояний isLoading для разных экшенов', () => {
+      let state = reducer(initialState, { type: getFeeds.pending.type });
+      expect(state.isLoading).toBe(true);
+
+      state = reducer(state, { type: getOrderByNumber.pending.type });
+      expect(state.isLoading).toBe(true);
+
+      state = reducer(state, {
+        type: getOrderByNumber.fulfilled.type,
+        payload: mockOrder
+      });
+
+      expect(state.isLoading).toBe(false);
+
+      state = reducer(state, {
+        type: getFeeds.fulfilled.type,
+        payload: mockFeedResponse
+      });
+      expect(state.isLoading).toBe(false);
     });
-    // ИСПРАВЛЕНО: после выполнения экшена флаг должен стать false
-    expect(state.isLoading).toBe(false);
-    
-    state = reducer(state, {
-      type: getFeeds.fulfilled.type,
-      payload: mockFeedResponse
-    });
-    expect(state.isLoading).toBe(false);
-  });
 
     test('Ошибка в одном экшене не влияет на данные другого', () => {
       let state = reducer(initialState, {
         type: getFeeds.fulfilled.type,
         payload: mockFeedResponse
       });
-      
+
       state = reducer(state, {
         type: getOrderByNumber.rejected.type,
         payload: 'Ошибка загрузки заказа'
       });
-      
+
       expect(state.orders).toHaveLength(1);
       expect(state.error).toBe('Ошибка загрузки заказа');
       expect(state.currentOrder).toBe(null);

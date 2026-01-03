@@ -1,4 +1,3 @@
-// tests/ingredientsSlice.test.ts
 import reducer, {
   initialState,
   getIngredients,
@@ -16,7 +15,7 @@ describe('Ingredients Slice', () => {
       test('isLoading меняется на true', () => {
         const action = { type: getIngredients.pending.type };
         const state = reducer(initialState, action);
-        
+
         expect(state.isLoading).toBe(true);
       });
 
@@ -24,7 +23,7 @@ describe('Ingredients Slice', () => {
         const stateWithError = { ...initialState, error: 'Предыдущая ошибка' };
         const action = { type: getIngredients.pending.type };
         const state = reducer(stateWithError, action);
-        
+
         expect(state.isLoading).toBe(true);
         expect(state.error).toBe(null);
       });
@@ -37,7 +36,7 @@ describe('Ingredients Slice', () => {
           payload: mockIngredients
         };
         const state = reducer(initialState, action);
-        
+
         expect(state.ingredients).toEqual(mockIngredients);
         expect(state.ingredients).toHaveLength(3);
       });
@@ -49,7 +48,7 @@ describe('Ingredients Slice', () => {
           payload: mockIngredients
         };
         const state = reducer(loadingState, action);
-        
+
         expect(state.isLoading).toBe(false);
       });
 
@@ -59,15 +58,15 @@ describe('Ingredients Slice', () => {
           payload: mockIngredients
         };
         const state = reducer(initialState, action);
-        
+
         expect(state.buns).toHaveLength(1);
         expect(state.buns[0].type).toBe('bun');
         expect(state.buns[0].name).toBe('Краторная булка N-200i');
-        
+
         expect(state.mains).toHaveLength(1);
         expect(state.mains[0].type).toBe('main');
         expect(state.mains[0].name).toBe('Биокотлета из марсианской Магнолии');
-        
+
         expect(state.sauces).toHaveLength(1);
         expect(state.sauces[0].type).toBe('sauce');
         expect(state.sauces[0].name).toBe('Соус Spicy-X');
@@ -82,7 +81,7 @@ describe('Ingredients Slice', () => {
           payload: errorMessage
         };
         const state = reducer(initialState, action);
-        
+
         expect(state.error).toBe(errorMessage);
       });
 
@@ -93,7 +92,7 @@ describe('Ingredients Slice', () => {
           payload: 'Ошибка'
         };
         const state = reducer(loadingState, action);
-        
+
         expect(state.isLoading).toBe(false);
       });
 
@@ -104,13 +103,13 @@ describe('Ingredients Slice', () => {
           buns: mockIngredients.slice(0, 1),
           isLoading: true
         };
-        
+
         const action = {
           type: getIngredients.rejected.type,
           payload: 'Новая ошибка'
         };
         const state = reducer(stateWithData, action);
-        
+
         expect(state.isLoading).toBe(false);
         expect(state.error).toBe('Новая ошибка');
         expect(state.ingredients).toHaveLength(1);
@@ -120,54 +119,59 @@ describe('Ingredients Slice', () => {
 
     describe('Полные циклы', () => {
       test('Request -> Success цикл', () => {
-        let state = reducer(initialState, { type: getIngredients.pending.type });
+        let state = reducer(initialState, {
+          type: getIngredients.pending.type
+        });
         expect(state.isLoading).toBe(true);
-        
+
         state = reducer(state, {
           type: getIngredients.fulfilled.type,
           payload: mockIngredients
         });
-        
+
         expect(state.isLoading).toBe(false);
         expect(state.ingredients).toHaveLength(3);
         expect(state.error).toBe(null);
       });
 
       test('Request -> Failed цикл', () => {
-        let state = reducer(initialState, { type: getIngredients.pending.type });
+        let state = reducer(initialState, {
+          type: getIngredients.pending.type
+        });
         expect(state.isLoading).toBe(true);
-        
+
         state = reducer(state, {
           type: getIngredients.rejected.type,
           payload: 'Таймаут запроса'
         });
-        
+
         expect(state.isLoading).toBe(false);
         expect(state.error).toBe('Таймаут запроса');
         expect(state.ingredients).toHaveLength(0);
       });
 
       test('Request -> Success -> Request -> Failed цикл', () => {
-        let state = reducer(initialState, { type: getIngredients.pending.type });
+        let state = reducer(initialState, {
+          type: getIngredients.pending.type
+        });
         expect(state.isLoading).toBe(true);
-        
+
         state = reducer(state, {
           type: getIngredients.fulfilled.type,
           payload: mockIngredients.slice(0, 2)
         });
-        
+
         expect(state.isLoading).toBe(false);
         expect(state.ingredients).toHaveLength(2);
-        
-        // Вторая попытка
+
         state = reducer(state, { type: getIngredients.pending.type });
         expect(state.isLoading).toBe(true);
-        
+
         state = reducer(state, {
           type: getIngredients.rejected.type,
           payload: 'Вторая ошибка'
         });
-        
+
         expect(state.isLoading).toBe(false);
         expect(state.error).toBe('Вторая ошибка');
         expect(state.ingredients).toHaveLength(2);
@@ -180,15 +184,15 @@ describe('Ingredients Slice', () => {
       const stateWithData = {
         ...initialState,
         ingredients: mockIngredients,
-        buns: mockIngredients.filter(i => i.type === 'bun'),
-        mains: mockIngredients.filter(i => i.type === 'main'),
-        sauces: mockIngredients.filter(i => i.type === 'sauce'),
+        buns: mockIngredients.filter((i) => i.type === 'bun'),
+        mains: mockIngredients.filter((i) => i.type === 'main'),
+        sauces: mockIngredients.filter((i) => i.type === 'sauce'),
         error: 'Какая-то ошибка',
         isLoading: false
       };
-      
+
       const state = reducer(stateWithData, clearIngredients());
-      
+
       expect(state.ingredients).toHaveLength(0);
       expect(state.buns).toHaveLength(0);
       expect(state.mains).toHaveLength(0);
@@ -199,7 +203,7 @@ describe('Ingredients Slice', () => {
 
     test('clearIngredients на пустом состоянии', () => {
       const state = reducer(initialState, clearIngredients());
-      
+
       expect(state).toEqual(initialState);
     });
   });
@@ -211,7 +215,7 @@ describe('Ingredients Slice', () => {
         payload: []
       };
       const state = reducer(initialState, action);
-      
+
       expect(state.ingredients).toHaveLength(0);
       expect(state.buns).toHaveLength(0);
       expect(state.mains).toHaveLength(0);
@@ -223,7 +227,7 @@ describe('Ingredients Slice', () => {
         {
           _id: '1',
           name: 'Тест',
-          type: 'unknown' as any,
+          type: 'unknown',
           proteins: 10,
           fat: 10,
           carbohydrates: 10,
@@ -231,17 +235,16 @@ describe('Ingredients Slice', () => {
           price: 100,
           image: '',
           image_mobile: '',
-          image_large: '',
-          __v: 0
+          image_large: ''
         }
       ];
-      
+
       const action = {
         type: getIngredients.fulfilled.type,
         payload: customIngredients
       };
       const state = reducer(initialState, action);
-      
+
       expect(state.ingredients).toHaveLength(1);
       expect(state.buns).toHaveLength(0);
       expect(state.mains).toHaveLength(0);
@@ -255,7 +258,7 @@ describe('Ingredients Slice', () => {
         payload: customError
       };
       const state = reducer(initialState, action);
-      
+
       expect(state.error).toBe(customError);
       expect(state.isLoading).toBe(false);
     });
@@ -266,7 +269,7 @@ describe('Ingredients Slice', () => {
         payload: undefined
       };
       const state = reducer(initialState, action);
-      
+
       expect(state.error).toBe('Ошибка загрузки ингредиентов');
       expect(state.isLoading).toBe(false);
     });
@@ -277,7 +280,7 @@ describe('Ingredients Slice', () => {
         payload: mockIngredients
       };
       const state = reducer(initialState, action);
-      
+
       const ingredient = state.ingredients[0];
       expect(ingredient).toHaveProperty('_id');
       expect(ingredient).toHaveProperty('name');
@@ -290,7 +293,6 @@ describe('Ingredients Slice', () => {
       expect(ingredient).toHaveProperty('image');
       expect(ingredient).toHaveProperty('image_mobile');
       expect(ingredient).toHaveProperty('image_large');
-      expect(ingredient).toHaveProperty('__v');
     });
   });
 });

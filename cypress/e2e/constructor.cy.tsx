@@ -1,6 +1,6 @@
 /// <reference types="cypress" />
 
-// Конфигурация элементов управления
+
 const CONTROL_ELEMENTS = {
   DIALOG_WINDOW: '[data-cy="modal"]',
   DIALOG_CLOSE_BUTTON: '[data-cy="modal-close"]',
@@ -28,7 +28,6 @@ const CONTROL_ELEMENTS = {
   SESSION_RENEWAL_TOKEN: 'test-refresh-token',
 };
 
-// Элементы для сборки бургера
 const ASSEMBLY_COMPONENTS = {
   FLUORESCENT_BREAD: 'Флюоресцентная булка R2-D3',
   CRATORIAN_BREAD: 'Краторная булка N-200i',
@@ -36,25 +35,23 @@ const ASSEMBLY_COMPONENTS = {
   SPICY_CONDIMENT: 'Соус Spicy-X',
 };
 
-// Текстовые метки элементов управления
+
 const CONTROL_BUTTON_TEXTS = {
   ADD_COMPONENT: 'Добавить',
   FINALIZE_PURCHASE: 'Оформить заказ',
 };
 
-// Получение элемента компонента
 const locateComponentItem = (componentName: string) => {
   return cy.contains(componentName).parents('li');
 };
 
-// Добавление компонента в сборщик
+
 const insertComponent = (componentName: string) => {
   locateComponentItem(componentName)
     .find(`button:contains("${CONTROL_BUTTON_TEXTS.ADD_COMPONENT}")`)
     .click();
 };
 
-// Подтверждение закрытия диалогового окна
 const verifyDialogClosed = () => {
   cy.get(CONTROL_ELEMENTS.DIALOG_WINDOW).should('not.exist');
   cy.url().should('eq', Cypress.config().baseUrl + '/');
@@ -78,7 +75,6 @@ describe('Тестирование функционала сборщика бу�
     });
   });
 
-  // 1. ТЕСТЫ ДОБАВЛЕНИЯ ИНГРЕДИЕНТОВ
   describe('Добавление компонентов в конструктор', () => {
     it('Добавляет один компонент (минимальное требование)', () => {
       insertComponent(ASSEMBLY_COMPONENTS.FLUORESCENT_BREAD);
@@ -96,12 +92,15 @@ describe('Тестирование функционала сборщика бу�
     });
   });
 
-  // 2. ТЕСТЫ МОДАЛЬНЫХ ОКОН ИНГРЕДИЕНТОВ
   describe('Функционирование информационных окон компонентов', () => {
     it('Открывает диалоговое окно с деталями компонента при активации', () => {
       cy.contains(ASSEMBLY_COMPONENTS.CRATORIAN_BREAD).click();
       cy.get(CONTROL_ELEMENTS.DIALOG_WINDOW).should('be.visible');
       cy.get(CONTROL_ELEMENTS.INGREDIENT_INFO_PANEL).should('be.visible');
+      
+      // ИСПРАВЛЕНО: проверяем название ингредиента во всем модальном окне
+      cy.get(CONTROL_ELEMENTS.DIALOG_WINDOW).should('contain', ASSEMBLY_COMPONENTS.CRATORIAN_BREAD);
+      
       cy.get(CONTROL_ELEMENTS.DIALOG_CLOSE_BUTTON).click();
       verifyDialogClosed();
     });
@@ -109,6 +108,10 @@ describe('Тестирование функционала сборщика бу�
     it('Завершает работу диалога нажатием на элемент закрытия', () => {
       cy.contains(ASSEMBLY_COMPONENTS.CRATORIAN_BREAD).click();
       cy.wait(1000);
+      
+      // ИСПРАВЛЕНО: проверяем название ингредиента во всем модальном окне
+      cy.get(CONTROL_ELEMENTS.DIALOG_WINDOW).should('contain', ASSEMBLY_COMPONENTS.CRATORIAN_BREAD);
+      
       cy.get(CONTROL_ELEMENTS.DIALOG_CLOSE_BUTTON).click();
       verifyDialogClosed();
     });
@@ -116,12 +119,34 @@ describe('Тестирование функционала сборщика бу�
     it('Деактивирует диалоговое окно кликом по фоновому слою', () => {
       cy.contains(ASSEMBLY_COMPONENTS.CRATORIAN_BREAD).click();
       cy.wait(1000);
+      
+      // ИСПРАВЛЕНО: проверяем название ингредиента во всем модальном окне
+      cy.get(CONTROL_ELEMENTS.DIALOG_WINDOW).should('contain', ASSEMBLY_COMPONENTS.CRATORIAN_BREAD);
+      
       cy.get(CONTROL_ELEMENTS.DIALOG_OVERLAY).click({ force: true });
       verifyDialogClosed();
     });
+
+    // ДОБАВЛЕН НОВЫЙ ТЕСТ: закрытие модального окна по нажатию клавиши Esc
+    it('Закрывает диалоговое окно при нажатии клавиши Esc', () => {
+      cy.contains(ASSEMBLY_COMPONENTS.CRATORIAN_BREAD).click();
+      cy.wait(1000);
+      
+      // Проверяем что модальное окно открыто
+      cy.get(CONTROL_ELEMENTS.DIALOG_WINDOW).should('be.visible');
+      
+      // ИСПРАВЛЕНО: проверяем название ингредиента во всем модальном окне
+      cy.get(CONTROL_ELEMENTS.DIALOG_WINDOW).should('contain', ASSEMBLY_COMPONENTS.CRATORIAN_BREAD);
+      
+      // Нажимаем клавишу Esc
+      cy.get('body').type('{esc}');
+      
+      // Проверяем что модальное окно закрылось
+      cy.get(CONTROL_ELEMENTS.DIALOG_WINDOW).should('not.exist');
+      cy.url().should('eq', Cypress.config().baseUrl + '/');
+    });
   });
 
-  // 3. ТЕСТЫ СОЗДАНИЯ ЗАКАЗА
   describe('Процедура оформления покупки', () => {
     beforeEach(() => {
       cy.intercept('GET', CONTROL_ELEMENTS.USER_PROFILE_API, { 
@@ -161,6 +186,9 @@ describe('Тестирование функционала сборщика бу�
       cy.fixture(CONTROL_ELEMENTS.ORDER_TEST_DATA).then((orderData) => {
         cy.get(CONTROL_ELEMENTS.ORDER_IDENTIFIER).should('contain', orderData.order.number);
       });
+
+      // УПРОЩЕННАЯ ПРОВЕРКА: убеждаемся что модальное окно содержит текст (любой)
+      cy.get(CONTROL_ELEMENTS.DIALOG_WINDOW).should('not.be.empty');
 
       // Закрытие модального окна
       cy.get(CONTROL_ELEMENTS.DIALOG_CLOSE_BUTTON).click();

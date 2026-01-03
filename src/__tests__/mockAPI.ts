@@ -1,4 +1,3 @@
-// src/tests/__mocks__/api.ts
 export const getIngredientsApi = jest.fn();
 export const getFeedsApi = jest.fn();
 export const getOrderByNumberApi = jest.fn();
