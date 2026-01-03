@@ -1,3 +1,4 @@
+// tests/mockData.ts
 export const mockIngredients = [
   {
     _id: '643d69a5c3f7b9001cfa093c',
@@ -76,4 +77,13 @@ export const mockFeedResponse = {
   ],
   total: 100,
   totalToday: 10
+};
+
+export const mockErrorMessages = {
+  login: 'Invalid email or password',
+  register: 'User already exists',
+  update: 'Update failed',
+  auth: 'Session expired',
+  logout: 'Logout failed',
+  general: 'Something went wrong'
 };

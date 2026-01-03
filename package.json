@@ -3,9 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@reduxjs/toolkit": "^2.11.2",
     "@testing-library/user-event": "^13.5.0",
-    "@types/jest": "^27.5.2",
     "@types/node": "^16.18.23",
     "@types/react": "^18.0.31",
     "@types/react-dom": "^18.0.11",
@@ -32,6 +30,7 @@
     "@babel/preset-react": "^7.23.3",
     "@babel/preset-typescript": "^7.23.3",
     "@jest/globals": "^30.2.0",
+    "@reduxjs/toolkit": "^2.11.2",
     "@storybook/addon-essentials": "^7.6.10",
     "@storybook/addon-interactions": "^7.6.10",
     "@storybook/addon-links": "^7.6.10",
@@ -43,7 +42,7 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^14.3.1",
     "@testing-library/user-event": "^14.5.1",
-    "@types/jest": "^29.5.11",
+    "@types/jest": "^29.5.14",
     "@types/node": "^20.10.5",
     "@types/react": "^18.2.45",
     "@types/react-dom": "^18.2.18",
@@ -97,7 +96,15 @@
     "cypress:run": "cypress run",
     "test:e2e": "start-server-and-test start http://localhost:3000 cypress:run",
     "test:jest": "jest",
-    "test": "npm run test:jest && npm run test:e2e"
+    "test": "npm run test:jest && npm run test:e2e",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:user": "jest src/tests/slices/userSlice.test.ts",
+    "test:ingredients": "jest src/tests/slices/ingredientsSlice.test.ts",
+    "test:feed": "jest src/tests/slices/feedSlice.test.ts",
+    "test:constructor": "jest src/tests/slices/burgerConstructorSlice.test.ts",
+    "test:root": "jest src/tests/store/rootReducer.test.ts",
+    "test:all": "jest src/tests/"
   },
   "eslintConfig": {
     "extends": [
